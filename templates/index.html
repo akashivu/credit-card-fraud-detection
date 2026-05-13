@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Detection System</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="left-panel">
+        <h1>Fraud Detection AI</h1>
+
+        <p>
+            Advanced machine learning system to identify suspicious
+            credit card transactions in real-time.
+        </p>
+
+        <div class="card">
+            <h3>Project Highlights</h3>
+
+            <ul>
+                <li>Random Forest Model</li>
+                <li>SMOTE Imbalance Handling</li>
+                <li>Real-time Fraud Prediction</li>
+                <li>Flask ML Deployment</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="right-panel">
+
+        <form action="/predict" method="POST">
+
+            {% for i in range(30) %}
+            <div class="input-group">
+                <label>Feature V{{ i }}</label>
+                <input type="number" step="any" name="V{{ i }}" required>
+            </div>
+            {% endfor %}
+
+            <button type="submit">Analyze Transaction</button>
+
+        </form>
+
+        {% if prediction_text %}
+
+        <div class="result-box">
+
+            <h2>{{ prediction_text }}</h2>
+
+            <h3>Fraud Probability: {{ probability }}%</h3>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
