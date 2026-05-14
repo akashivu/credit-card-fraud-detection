@@ -5,5 +5,3 @@ __pycache__/
 # Generated images
 *.png
 
-models/
-*.pkl
