@@ -1,67 +1,241 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fraud Detection System</title>
-
+    <title>FraudGuard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
 <body>
 
-<div class="container">
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">FraudGuard AI</div>
+        <ul class="nav-links">
+            <li><a href="#analyzer">Analyze</a></li>
+            <li><a href="#how-it-works">How It Works</a></li>
+            <li><a href="#theory">Theory</a></li>
+            <li><a href="https://github.com/akashivu-github" target="_blank">GitHub</a></li>
+        </ul>
+    </nav>
 
-    <div class="left-panel">
-        <h1>Fraud Detection AI</h1>
-
-        <p>
-            Advanced machine learning system to identify suspicious
-            credit card transactions in real-time.
-        </p>
-
-        <div class="card">
-            <h3>Project Highlights</h3>
-
-            <ul>
-                <li>Random Forest Model</li>
-                <li>SMOTE Imbalance Handling</li>
-                <li>Real-time Fraud Prediction</li>
-                <li>Flask ML Deployment</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="right-panel">
-
-        <form action="/predict" method="POST">
-
-            {% for i in range(30) %}
-            <div class="input-group">
-                <label>Feature V{{ i }}</label>
-                <input type="number" step="any" name="V{{ i }}" required>
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">AI-Powered · Real-Time Detection</div>
+            <h1>Credit Card Fraud<br>Detection System</h1>
+            <p>Machine learning pipeline that flags suspicious transactions using anomaly patterns and ensemble classification.</p>
+            <div class="hero-buttons">
+                <a href="#analyzer" class="primary-btn">Analyze Transaction</a>
+                <a href="https://github.com/akashivu" target="_blank" class="secondary-btn">GitHub Repo</a>
             </div>
-            {% endfor %}
+        </div>
+        <div class="hero-image">
+            <img src="https://cdn-icons-png.flaticon.com/512/2491/2491913.png" alt="Fraud Detection">
+        </div>
+    </section>
 
-            <button type="submit">Analyze Transaction</button>
+    <!-- ANALYZER -->
+    <section id="analyzer" class="section">
+        <div class="analyzer-layout">
 
-        </form>
+            <!-- LEFT: Info panel -->
+            <div class="analyzer-left">
+                <div class="badge">ML-Powered</div>
+                <h2>Analyze a Transaction</h2>
+                <p>Fill in the transaction context on the right. The model maps your inputs into fraud-pattern features and returns a probability score.</p>
+                <ul class="info-list">
+                    <li><span>Model</span> Random Forest / SMOTE</li>
+                    <li><span>Features</span> PCA V1–V28 space</li>
+                    <li><span>Output</span> Fraud probability %</li>
+                </ul>
+            </div>
 
-        {% if prediction_text %}
+            <!-- RIGHT: Form + Result -->
+            <div class="analyzer-right">
+                <form action="/predict" method="POST">
+                    <div class="grid">
+                        <div class="input-group">
+                            <label>Amount (₹ / $)</label>
+                            <input type="number" step="0.01" name="Amount" placeholder="e.g. 4500.00" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Transaction Type</label>
+                            <select name="transaction_type">
+                                <option>Online Purchase</option>
+                                <option>ATM Withdrawal</option>
+                                <option>POS Payment</option>
+                                <option>International Transfer</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Risk Level</label>
+                            <select name="risk_level">
+                                <option>Low</option>
+                                <option>Medium</option>
+                                <option>High</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Location</label>
+                            <select name="location_type">
+                                <option>Domestic</option>
+                                <option>International</option>
+                                <option>Unknown Region</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Device</label>
+                            <select name="device_type">
+                                <option>Mobile</option>
+                                <option>Laptop</option>
+                                <option>ATM Machine</option>
+                                <option>POS Terminal</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Frequency</label>
+                            <select name="frequency">
+                                <option>Low</option>
+                                <option>Medium</option>
+                                <option>High</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>ML Model</label>
+                            <select name="model_name">
+                                <option>Random Forest</option>
+                                <option>SMOTE Enhanced Model</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit">Run Fraud Analysis</button>
+                </form>
 
-        <div class="result-box">
-
-            <h2>{{ prediction_text }}</h2>
-
-            <h3>Fraud Probability: {{ probability }}%</h3>
+                {% if prediction_text %}
+                <div class="result-box">
+                    <h2>{{ prediction_text }}</h2>
+                    <p>Model: {{ selected_model }}</p>
+                    <h3>Fraud Probability: {{ probability }}%</h3>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: {{ probability }}%"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
 
         </div>
+    </section>
 
-        {% endif %}
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="section light-section">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Three-stage pipeline from raw input to fraud decision.</p>
+        </div>
+        <div class="steps">
+            <div class="step-card">
+                <h3>1. Business Inputs</h3>
+                <p>User submits transaction context — amount, device, location, frequency, and risk level through the UI.</p>
+            </div>
+            <div class="step-card">
+                <h3>2. Feature Engineering</h3>
+                <p>Backend maps business signals into numerical fraud patterns that align with the PCA feature space the model was trained on.</p>
+            </div>
+            <div class="step-card">
+                <h3>3. ML Prediction</h3>
+                <p>Random Forest runs the engineered features through 100+ decision trees and returns a fraud probability score.</p>
+            </div>
+        </div>
+    </section>
 
-    </div>
+    <!-- THEORY -->
+    <section id="theory" class="section">
+        <div class="section-header">
+            <h2>Theory & ML Concepts</h2>
+            <p>What powers this system — explained plainly.</p>
+        </div>
+        <div class="theory-grid">
 
-</div>
+            <div class="theory-card">
+                <h3>PCA Features (V1–V28)</h3>
+                <p>
+                    The Kaggle Credit Card Fraud dataset has 28 anonymized features named V1 to V28. These are the result of
+                    <strong>Principal Component Analysis</strong> — a technique that compresses original transaction data (merchant, time, geography, etc.)
+                    into a smaller set of uncorrelated numbers. The bank anonymized it for privacy before releasing it.
+                </p>
+                <div class="example">
+                    Example: V4 = 2.8, V14 = -3.1 might represent an unusually large transaction from a rare merchant category — the model learned this pattern signals fraud.
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Class Imbalance Problem</h3>
+                <p>
+                    In the real dataset, only <strong>0.17% of transactions are fraud</strong> — about 492 out of 284,807.
+                    A naive model that predicts "not fraud" every single time would be 99.83% accurate but completely useless.
+                    Class imbalance forces us to use precision, recall, and AUC-ROC — not accuracy — to measure how well the model actually catches fraud.
+                </p>
+                <div class="example">
+                    Example: A model catches 90% of fraud cases but also flags 5% of legitimate ones. That tradeoff is a business decision — missing fraud is costlier than a false alarm.
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>SMOTE — Synthetic Oversampling</h3>
+                <p>
+                    <strong>SMOTE (Synthetic Minority Oversampling Technique)</strong> generates new, synthetic fraud samples by interpolating between real fraud cases in feature space.
+                    Instead of just duplicating fraud records, it creates believable variations, giving the model more fraud patterns to learn from without simply repeating the same data.
+                </p>
+                <div class="example">
+                    Example: If two fraud cases have V4 = [2.0, 3.0], SMOTE creates a new sample at V4 = 2.5 — a plausible fraud point the model hasn't seen before.
+                </div>
+            </div>
+
+            <div class="theory-card">
+                <h3>Random Forest Classifier</h3>
+                <p>
+                    Random Forest trains <strong>N independent decision trees</strong>, each on a random subset of features and rows.
+                    At prediction time, every tree votes — fraud or not — and the majority wins. This reduces overfitting that a single tree would have
+                    and makes the model robust to noisy, outlier-heavy fraud data.
+                </p>
+                <div class="example">
+                    Example: 100 trees vote → 73 say "fraud", 27 say "legitimate" → fraud probability = 73%. The model doesn't guess; it aggregates evidence.
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ARCHITECTURE -->
+    <section class="section light-section">
+        <div class="section-header">
+            <h2>Architecture Flow</h2>
+        </div>
+        <div class="architecture">
+            <div class="arch-box">Frontend UI</div>
+            <div class="arrow">→</div>
+            <div class="arch-box">Flask Backend</div>
+            <div class="arrow">→</div>
+            <div class="arch-box">Feature Engineering</div>
+            <div class="arrow">→</div>
+            <div class="arch-box">ML Model</div>
+            <div class="arrow">→</div>
+            <div class="arch-box">Prediction Result</div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <h3>FraudGuard AI</h3>
+        <p>Built with Flask, Scikit-learn, and SMOTE. End-to-end fraud detection pipeline.</p>
+        <div class="footer-links">
+            <a href="https://github.com/akashivu" target="_blank">GitHub</a>
+            <a href="www.linkedin.com/in/akashpatil001" target="_blank">LinkedIn</a>
+        </div>
+    </footer>
 
 </body>
 </html>
