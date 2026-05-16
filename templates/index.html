@@ -17,7 +17,7 @@
             <li><a href="#analyzer">Analyze</a></li>
             <li><a href="#how-it-works">How It Works</a></li>
             <li><a href="#theory">Theory</a></li>
-            <li><a href="https://github.com/akashivu-github" target="_blank">GitHub</a></li>
+            <li><a href="https://github.com/akashivu" target="_blank">GitHub</a></li>
         </ul>
     </nav>
 
@@ -114,20 +114,181 @@
                     <button type="submit">Run Fraud Analysis</button>
                 </form>
 
-                {% if prediction_text %}
-                <div class="result-box">
-                    <h2>{{ prediction_text }}</h2>
-                    <p>Model: {{ selected_model }}</p>
-                    <h3>Fraud Probability: {{ probability }}%</h3>
-                    <div class="progress-bar">
-                        <div class="progress" style="width: {{ probability }}%"></div>
+                <div class="result-box" id="result-box" {% if not prediction_text %}style="display:none"{% endif %}>
+                    {% if prediction_text %}
+                    <div class="result-inner">
+                        <h2>{{ prediction_text }}</h2>
+                        <p>Model: {{ selected_model }}</p>
+                        <h3>Fraud Probability: {{ probability }}%</h3>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: {{ probability }}%"></div>
+                        </div>
                     </div>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
 
         </div>
     </section>
+
+    <!-- FEATURE ENGINEERING TABLE -->
+    <section class="section light-section">
+        <div class="section-header">
+            <h2>PCA Feature Simulation Engine</h2>
+            <p>Your business inputs are mapped into numerical features the ML model reads. Updates as you fill the form.</p>
+        </div>
+
+        <div class="feature-table-wrap">
+
+            <!-- Business Inputs column -->
+            <div class="feat-col">
+                <div class="feat-col-header">Business Inputs</div>
+                <div class="feat-row header-row"><span>Field</span><span>Value</span></div>
+                <div class="feat-row"><span>Amount</span><span id="fi-amount">—</span></div>
+                <div class="feat-row"><span>Time (simulated)</span><span id="fi-time">—</span></div>
+                <div class="feat-row"><span>Transaction Type</span><span id="fi-type">—</span></div>
+                <div class="feat-row"><span>Risk Level</span><span id="fi-risk">—</span></div>
+                <div class="feat-row"><span>Location</span><span id="fi-location">—</span></div>
+                <div class="feat-row"><span>Device</span><span id="fi-device">—</span></div>
+                <div class="feat-row"><span>Frequency</span><span id="fi-freq">—</span></div>
+            </div>
+
+            <div class="feat-arrow">→</div>
+
+            <!-- V1–V28 column with accordion -->
+            <div class="feat-col">
+                <div class="feat-col-header">Model Features (V1–V28 + Amount + Time)</div>
+
+                <!-- Always visible: Time + Amount + V1–V4 -->
+                <div class="feat-row header-row three-col"><span>Feature</span><span>Value</span><span>Role</span></div>
+                <div class="feat-row three-col"><span>Time</span><span class="vval" id="v-time">—</span><span class="vmeta">Seconds since first tx</span></div>
+                <div class="feat-row three-col"><span>Amount</span><span class="vval" id="v-amount">—</span><span class="vmeta">Raw transaction amount</span></div>
+                <div id="vfeatures-top"></div>
+
+                <!-- Accordion toggle for V5–V28 -->
+                <button type="button" class="accordion-toggle" id="vToggle" onclick="toggleV()">
+                    <span id="vToggleLabel">Show V5–V28 Features</span>
+                    <svg id="vChevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+
+                <!-- Collapsible V5–V28 rows -->
+                <div class="v-accordion" id="vAccordion">
+                    <div id="vfeatures-body"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <p class="feat-note">
+            ⚠ These are <strong>simulated</strong> PCA values for demonstration. In production, V1–V28 come from the bank's real PCA transformation pipeline.
+        </p>
+    </section>
+
+    <script>
+    const V_META = [
+        "Time-distance from last transaction","Transaction velocity pattern","Merchant category signal",
+        "Geographic deviation","Amount-to-average ratio","Device fingerprint score",
+        "Behavioural anomaly index","Session duration pattern","Card-present vs card-not-present",
+        "Cross-border frequency","Night-time transaction flag","Repeated merchant pattern",
+        "High-value purchase signal","Account age interaction","Auth failure history",
+        "Spending spike indicator","IP location mismatch","Contactless payment pattern",
+        "Transaction interval","Chip vs swipe indicator","Decline rate signal",
+        "Refund pattern","Currency mismatch","Network latency flag",
+        "Bin country mismatch","Micro-transaction probe","Weekend/holiday pattern","New merchant flag"
+    ];
+
+    function seededRand(seed, i) {
+        let x = Math.sin(seed * 9301 + i * 49297 + 233720) * 93176;
+        return x - Math.floor(x);
+    }
+
+    function inputSeed(type, risk, loc, device, freq) {
+        const map = {
+            "Online Purchase":1,"ATM Withdrawal":2,"POS Payment":3,"International Transfer":4,
+            "Low":1,"Medium":2,"High":3,
+            "Domestic":1,"International":2,"Unknown Region":3,
+            "Mobile":1,"Laptop":2,"ATM Machine":3,"POS Terminal":4
+        };
+        return (map[type]||1)*1000+(map[risk]||1)*100+(map[loc]||1)*10+(map[device]||1)+(map[freq]||1)*0.1;
+    }
+
+    function generateFeatures(amount, type, risk, loc, device, freq) {
+        const seed = inputSeed(type, risk, loc, device, freq) + (parseFloat(amount)||0) * 0.01;
+        const riskMult = risk==="High"?2.5:risk==="Medium"?1.2:0.5;
+        const intl = loc==="International"?1.8:loc==="Unknown Region"?2.2:0.3;
+        return Array.from({length:28},(_,i)=>{
+            let b = (seededRand(seed,i)*6)-3;
+            if(i===3||i===9||i===22) b*=intl;
+            if(i===5||i===14) b*=riskMult;
+            if(i===6||i===16) b*=(freq==="High"?1.9:1);
+            return parseFloat(b.toFixed(4));
+        });
+    }
+
+    function updateTable() {
+        const amount = document.querySelector('[name="Amount"]').value;
+        const type   = document.querySelector('[name="transaction_type"]').value;
+        const risk   = document.querySelector('[name="risk_level"]').value;
+        const loc    = document.querySelector('[name="location_type"]').value;
+        const device = document.querySelector('[name="device_type"]').value;
+        const freq   = document.querySelector('[name="frequency"]').value;
+
+        const timeVal = amount ? Math.floor(seededRand(parseFloat(amount)||1,99)*86400) : 0;
+
+        document.getElementById('fi-amount').textContent   = amount ? `$${parseFloat(amount).toFixed(2)}` : '—';
+        document.getElementById('fi-time').textContent     = amount ? `${timeVal}s` : '—';
+        document.getElementById('fi-type').textContent     = type;
+        document.getElementById('fi-risk').textContent     = risk;
+        document.getElementById('fi-location').textContent = loc;
+        document.getElementById('fi-device').textContent   = device;
+        document.getElementById('fi-freq').textContent     = freq;
+        document.getElementById('v-time').textContent      = timeVal;
+        document.getElementById('v-amount').textContent    = amount ? parseFloat(amount).toFixed(2) : '—';
+
+        const features = generateFeatures(amount, type, risk, loc, device, freq);
+
+        // V1–V4 always visible
+        let topRows = '';
+        features.slice(0, 4).forEach((v, i) => {
+            const cls = Math.abs(v)>2?'vval high':Math.abs(v)>1?'vval mid':'vval';
+            topRows += `<div class="feat-row three-col"><span>V${i+1}</span><span class="${cls}">${v}</span><span class="vmeta">${V_META[i]}</span></div>`;
+        });
+        document.getElementById('vfeatures-top').innerHTML = topRows;
+
+        // V5–V28 in accordion
+        let rows = '';
+        features.slice(4).forEach((v, i) => {
+            const idx = i + 4;
+            const cls = Math.abs(v)>2?'vval high':Math.abs(v)>1?'vval mid':'vval';
+            rows += `<div class="feat-row three-col"><span>V${idx+1}</span><span class="${cls}">${v}</span><span class="vmeta">${V_META[idx]}</span></div>`;
+        });
+        document.getElementById('vfeatures-body').innerHTML = rows;
+    }
+
+    // Accordion toggle for V1-V28
+    function toggleV() {
+        const acc = document.getElementById('vAccordion');
+        const label = document.getElementById('vToggleLabel');
+        const chevron = document.getElementById('vChevron');
+        const isOpen = acc.classList.toggle('open');
+        label.textContent = isOpen ? 'Hide V5–V28 Features' : 'Show V5–V28 Features';
+        chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+    }
+
+    // Smooth result box pop-in after form submit
+    window.addEventListener('DOMContentLoaded', () => {
+        const box = document.getElementById('result-box');
+        if (box && box.querySelector('.result-inner')) {
+            box.style.display = 'block';
+            requestAnimationFrame(() => requestAnimationFrame(() => box.classList.add('visible')));
+        }
+    });
+
+    document.querySelectorAll('[name="Amount"],[name="transaction_type"],[name="risk_level"],[name="location_type"],[name="device_type"],[name="frequency"]')
+        .forEach(el => el.addEventListener('input', updateTable));
+
+    updateTable();
+    </script>
 
     <!-- HOW IT WORKS -->
     <section id="how-it-works" class="section light-section">
